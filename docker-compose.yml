@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: paperclip-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-paperclip}
+      POSTGRES_USER: ${DB_USER:-paperclip}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  paperclip:
+    image: ${DOCKER_HUB_USERNAME}/paperclip-custom-alfastage:latest
+    container_name: paperclip-app
+    restart: unless-stopped
+    ports:
+      - "3100:3100"  # Porta exposta para o Coolify, Traefik ou Cloudflare Tunnel
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Modo Authenticated + Public
+      - PAPERCLIP_DEPLOYMENT_MODE=authenticated
+      - PAPERCLIP_DEPLOYMENT_EXPOSURE=public
+      - PAPERCLIP_AUTH_PUBLIC_BASE_URL=https://${DOMAIN}
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
+      - DATABASE_URL=postgresql://${DB_USER:-paperclip}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-paperclip}
+      # Chaves e Segredos de IA
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      - paperclip-data:/home/node/.paperclip
+      - hermes-skills:/root/.hermes
+
+volumes:
+  pgdata:
+  paperclip-data:
+  hermes-skills:
