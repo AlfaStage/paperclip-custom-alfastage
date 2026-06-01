@@ -22,6 +22,9 @@ services:
       postgres:
         condition: service_healthy
     environment:
+      # Configurações de Rede
+      - HOST=0.0.0.0
+      - PORT=3100
       # Modo Authenticated + Public
       - PAPERCLIP_DEPLOYMENT_MODE=authenticated
       - PAPERCLIP_DEPLOYMENT_EXPOSURE=public
