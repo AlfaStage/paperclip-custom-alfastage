@@ -168,3 +168,35 @@ pnpm paperclipai auth bootstrap-ceo --base-url https://paperclip.labs.alfastage.
 2. Abra o link no seu navegador.
 3. Preencha seus dados de e-mail e senha para concluir a criação do primeiro usuário do ecossistema. Você será oficialmente autenticado como o **CEO** com acesso ao painel de orquestração.
 
+---
+
+## 🤖 Configuração e Resolução de Problemas nos Agentes (OpenCode & Hermes)
+
+Após realizar o cadastro como CEO e acessar o painel do Paperclip, você poderá implantar e configurar os agentes de IA locais. Siga estas diretrizes para validar e resolver avisos comuns de funcionamento:
+
+### 1. OpenCode Agent (`opencode_local`)
+Caso o diagnóstico de probe do OpenCode aponte alertas como `Configured OpenCode model is unavailable` ou `OpenCode probe ran but did not return hello as expected`:
+* **Selecione um Modelo Gratuito Ativo:** Nas configurações do Agente no painel do Paperclip, defina a propriedade do modelo para uma das opções gratuitas (Free Tier) descobertas pela CLI do OpenCode. Exemplos:
+  * `opencode/deepseek-v4-flash-free`
+  * `opencode/nemotron-3-super-free`
+  * `opencode/minimax-m3-free`
+* **Validar a Execução no Terminal:** Para testar a comunicação direta do OpenCode com os provedores a partir do container, acesse o terminal dele e execute:
+  ```bash
+  opencode run --format json "Respond with hello"
+  ```
+  Isso ajuda a diagnosticar possíveis gargalos de rede ou respostas fora do padrão esperado pelo probe do Paperclip.
+
+### 2. Hermes Agent (`hermes_local`)
+Caso o Hermes acuse ausência de chaves de API (`No LLM API keys found in environment`):
+* **Configuração das Credenciais do Gemini ou OpenRouter:**
+  O Hermes Agent suporta nativamente o Google Gemini (AI Studio) ou OpenRouter. Ele precisa localizar as variáveis `GEMINI_API_KEY` (ou `GOOGLE_API_KEY`) ou `OPENROUTER_API_KEY`.
+  * **Opção A (Via Interface do Paperclip - Recomendado):** Acesse a edição do Agente no painel web, localize a seção de **Env Secrets / Agent Secrets** e insira as variáveis com as suas chaves correspondentes.
+  * **Opção B (Via Terminal do Container):** Persista as chaves diretamente no arquivo de ambiente do volume do Hermes executando:
+    ```bash
+    cat << 'EOF' > /root/.hermes/.env
+    GEMINI_API_KEY=sua_chave_gemini_aqui
+    OPENROUTER_API_KEY=sua_chave_openrouter_aqui
+    EOF
+    ```
+
+
