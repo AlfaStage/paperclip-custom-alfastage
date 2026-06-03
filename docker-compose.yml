@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_DB: ${DB_NAME:-paperclip}
       POSTGRES_USER: ${DB_USER:-paperclip}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-paperclip_secret_pass}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -17,11 +17,11 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
-          memory: 256M
+          cpus: '0.50'
+          memory: 512M
         reservations:
-          cpus: '0.10'
-          memory: 128M
+          cpus: '0.20'
+          memory: 256M
 
   paperclip:
     image: ${DOCKER_HUB_USERNAME}/paperclip-custom-alfastage:latest
@@ -38,7 +38,7 @@ services:
       - PAPERCLIP_DEPLOYMENT_EXPOSURE=public
       - PAPERCLIP_AUTH_PUBLIC_BASE_URL=https://${DOMAIN}
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
-      - DATABASE_URL=postgresql://${DB_USER:-paperclip}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-paperclip}
+      - DATABASE_URL=postgresql://${DB_USER:-paperclip}:${DB_PASSWORD:-paperclip_secret_pass}@postgres:5432/${DB_NAME:-paperclip}
       # Chaves e Segredos de IA
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
@@ -58,4 +58,5 @@ volumes:
   pgdata:
   paperclip-data:
   hermes-skills:
+
 

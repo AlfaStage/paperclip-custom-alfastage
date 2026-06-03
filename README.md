@@ -39,7 +39,7 @@ Para implantar no **Coolify** de forma modular, rápida e com consumo reduzido d
 
 > [!IMPORTANT]
 > **Configurações de Hardware Atribuídas:**
-> *   **PostgreSQL:** Limitado a `0.25 vCPU` e `256 MB` de RAM. Consumo ideal para banco de dados relacional persistente de leve carga.
+> *   **PostgreSQL:** Limitado a `0.50 vCPU` e `512 MB` de RAM. Este limite garante recursos suficientes para a inicialização inicial do banco de dados e execução do healthcheck sem lentidão.
 > *   **Paperclip:** Limitado a `1.00 vCPU` e `1.5 GB` de RAM. Este limite de 1.5 GB de RAM é o mínimo necessário para garantir que subprocessos paralelos de IA (como Node.js/OpenCode e Python/Hermes) rodem sem sofrer falhas de Out of Memory (OOM).
 
 ### Configuração do Docker Compose (Coolify):
@@ -53,7 +53,7 @@ services:
     environment:
       POSTGRES_DB: '${DB_NAME:-paperclip}'
       POSTGRES_USER: '${DB_USER:-paperclip}'
-      POSTGRES_PASSWORD: '${DB_PASSWORD}'
+      POSTGRES_PASSWORD: '${DB_PASSWORD:-paperclip_secret_pass}'
     volumes:
       - 'pgdata:/var/lib/postgresql/data'
     healthcheck:
@@ -67,11 +67,11 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
-          memory: 256M
+          cpus: '0.50'
+          memory: 512M
         reservations:
-          cpus: '0.10'
-          memory: 128M
+          cpus: '0.20'
+          memory: 256M
 
   paperclip:
     image: 'alfastage/paperclip-custom-alfastage:latest'
@@ -88,7 +88,7 @@ services:
       - PAPERCLIP_DEPLOYMENT_EXPOSURE=public
       - 'PAPERCLIP_AUTH_PUBLIC_BASE_URL=https://paperclip.labs.alfastage.com.br'
       - 'BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:-cThzOTAyNXA5dzRmNW12c2VjdXJlOGMzaGF3ZDVkMnYyNnc1ZmEy}'
-      - 'DATABASE_URL=postgresql://${DB_USER:-paperclip}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-paperclip}'
+      - 'DATABASE_URL=postgresql://${DB_USER:-paperclip}:${DB_PASSWORD:-paperclip_secret_pass}@postgres:5432/${DB_NAME:-paperclip}'
       - 'ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}'
       - 'OPENAI_API_KEY=${OPENAI_API_KEY}'
     volumes:
