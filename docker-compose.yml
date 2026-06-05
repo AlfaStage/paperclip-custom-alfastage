@@ -46,7 +46,8 @@ services:
       - paperclip-data:/root/.paperclip
       - hermes-skills:/root/.hermes
       - opencode-config:/root/.opencode
-      - gcloud-config:/root/.config
+      - gemini-cli-config:/root/.gemini
+      - general-config:/root/.config
       - codex-config:/root/.codex
     deploy:
       resources:
@@ -62,7 +63,8 @@ volumes:
   paperclip-data:
   hermes-skills:
   opencode-config:
-  gcloud-config:
+  gemini-cli-config:
+  general-config:
   codex-config:
 
 

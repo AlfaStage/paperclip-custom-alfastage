@@ -95,7 +95,8 @@ services:
       - 'paperclip-data:/root/.paperclip'
       - 'hermes-skills:/root/.hermes'
       - 'opencode-config:/root/.opencode'
-      - 'gcloud-config:/root/.config'
+      - 'gemini-cli-config:/root/.gemini'
+      - 'general-config:/root/.config'
       - 'codex-config:/root/.codex'
     deploy:
       resources:
@@ -111,7 +112,8 @@ volumes:
   paperclip-data: null
   hermes-skills: null
   opencode-config: null
-  gcloud-config: null
+  gemini-cli-config: null
+  general-config: null
   codex-config: null
 ```
 
@@ -204,5 +206,24 @@ Caso o Hermes acuse ausência de chaves de API (`No LLM API keys found in enviro
     OPENROUTER_API_KEY=sua_chave_openrouter_aqui
     EOF
     ```
+
+### 3. Codex Agent (`codex_local`) e Autenticação Headless (ChatGPT)
+Como o Codex CLI (`@openai/codex`) é executado em um ambiente de container Linux headless (sem navegador gráfico), tentar rodar o comando de login tradicional (`codex login`) diretamente no container irá falhar.
+
+* **Método 1 (Injeção de Token via Variável de Ambiente - Mais Fácil):**
+  Obtenha o seu token de acesso da OpenAI e defina a variável de ambiente `CODEX_ACCESS_TOKEN` nas configurações da aplicação no painel do Coolify. O Codex detectará essa variável automaticamente sem necessitar do arquivo de login em disco.
+* **Método 2 (Cópia da Sessão Local do seu PC para o Container):**
+  1. Instale o Codex CLI em sua máquina local de desenvolvimento executando `npm install -g @openai/codex`.
+  2. Autentique-se na sua conta GPT rodando localmente o comando `codex login` (este comando abrirá seu navegador para autenticar de forma segura).
+  3. Copie o arquivo de credenciais gerado na sua máquina local:
+     * No Windows: localizado em `C:\Users\<Seu_Usuario>\.codex\auth.json`
+     * No Linux/macOS: localizado em `~/.codex/auth.json`
+  4. Cole o conteúdo de `auth.json` no arquivo correspondente dentro do container no caminho `/root/.codex/auth.json` (que está associado ao volume persistente `codex-config`).
+
+### 4. Gemini CLI (`gemini`)
+O Gemini CLI oficial do Google (`@google/gemini-cli`) é instalado globalmente.
+* **Persistência de Sessão:** Toda a configuração e projetos confiáveis são salvos em `/root/.gemini` (mapeado para o volume `gemini-cli-config`), garantindo que a sua sessão e autorizações de login permaneçam ativas mesmo após reinicializações.
+* **Uso de API Key:** Caso prefira usar uma chave de API do Gemini, basta declarar `GEMINI_API_KEY` nas variáveis de ambiente do Coolify.
+
 
 

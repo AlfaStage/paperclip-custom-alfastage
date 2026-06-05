@@ -32,16 +32,8 @@ RUN npm install -g opencode-ai
 RUN curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash
 ENV PATH="/root/.hermes/bin:$PATH"
 
-# Instalação silenciosa do Google Cloud CLI
-RUN mkdir -p /usr/local/gcloud \
-  && curl -sSL https://sdk.cloud.google.com > /tmp/google-cloud-sdk.sh \
-  && bash /tmp/google-cloud-sdk.sh --install-dir=/usr/local/gcloud --disable-prompts \
-  && rm /tmp/google-cloud-sdk.sh
-ENV PATH="/usr/local/gcloud/google-cloud-sdk/bin:$PATH"
-ENV CLOUDSDK_CORE_DISABLE_PROMPTS=1
-
-# Instalação global do Codex CLI
-RUN npm install -g @openai/codex
+# Instalação global do Codex CLI e Gemini CLI
+RUN npm install -g @openai/codex @google/gemini-cli
 
 
 FROM base AS deps
