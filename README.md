@@ -8,8 +8,8 @@ Tudo é automatizado de ponta a ponta via **GitHub Actions** e perfeitamente com
 
 ## 🛠️ Conteúdo do Repositório
 
-*   `Dockerfile`: Configuração de compilação multi-stage estendendo a imagem oficial do Paperclip, instalando os runtimes globais dos agentes de IA (`opencode-ai` e `hermes-agent`) e injetando a tradução em português (`paperclip-plugin-i18n-pt-br`) na build estática do frontend.
-*   `docker-compose.yml`: Ambiente de infraestrutura leve e otimizado com limites de hardware contendo apenas a imagem personalizada do Paperclip e o banco PostgreSQL necessário para sessões de autenticação em produção.
+*   `Dockerfile`: Configuração de compilação multi-stage estendendo a imagem oficial do Paperclip, instalando os runtimes globais e CLIs de IA (`opencode-ai`, `hermes-agent`, `@openai/codex`), além do Google Cloud CLI (`gcloud`), e injetando a tradução em português (`paperclip-plugin-i18n-pt-br`) na build estática do frontend.
+*   `docker-compose.yml`: Ambiente de infraestrutura leve e otimizado com limites de hardware e mapeamento de volumes persistentes dedicados para manter todas as configurações e chaves dos agentes salvas de forma segura.
 *   `.env.example`: Modelo de variáveis de ambiente para preenchimento no host.
 *   `.github/workflows/docker-build-push.yml`: Workflow que compila a imagem no GitHub Actions e faz o push automático para o Docker Hub em novos commits ou semanalmente.
 
@@ -39,8 +39,8 @@ Para implantar no **Coolify** de forma modular, rápida e com consumo reduzido d
 
 > [!IMPORTANT]
 > **Configurações de Hardware Atribuídas:**
-> *   **PostgreSQL:** Limitado a `0.50 vCPU` e `512 MB` de RAM. Este limite garante recursos suficientes para a inicialização inicial do banco de dados e execução do healthcheck sem lentidão.
-> *   **Paperclip:** Limitado a `1.00 vCPU` e `1.5 GB` de RAM. Este limite de 1.5 GB de RAM é o mínimo necessário para garantir que subprocessos paralelos de IA (como Node.js/OpenCode e Python/Hermes) rodem sem sofrer falhas de Out of Memory (OOM).
+> *   **PostgreSQL:** Limitado a `0.50 vCPU` e `512 MB` de RAM. Garante recursos estáveis para inicialização e backups de banco.
+> *   **Paperclip:** Limitado a `2.00 vCPU` e `2.5 GB` de RAM. Esse teto de 2.5 GB é essencial para permitir que o Paperclip rode com segurança múltiplos agentes, organogramas de empresas e os runtimes das CLIs de suporte (Node/OpenCode/Codex, Python/Hermes e gcloud CLI) sem risco de travamentos ou OOM.
 
 ### Configuração do Docker Compose (Coolify):
 Cole o bloco abaixo na caixa de configurações do seu serviço de Docker Compose no Coolify:
@@ -92,13 +92,16 @@ services:
       - 'ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}'
       - 'OPENAI_API_KEY=${OPENAI_API_KEY}'
     volumes:
-      - 'paperclip-data:/home/node/.paperclip'
+      - 'paperclip-data:/root/.paperclip'
       - 'hermes-skills:/root/.hermes'
+      - 'opencode-config:/root/.opencode'
+      - 'gcloud-config:/root/.config'
+      - 'codex-config:/root/.codex'
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 1.5G
+          cpus: '2.0'
+          memory: 2.5G
         reservations:
           cpus: '0.25'
           memory: 512M
@@ -107,6 +110,9 @@ volumes:
   pgdata: null
   paperclip-data: null
   hermes-skills: null
+  opencode-config: null
+  gcloud-config: null
+  codex-config: null
 ```
 
 ---
